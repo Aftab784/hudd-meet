@@ -1,0 +1,48 @@
+require('dotenv').config()
+import express from "express";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
+import mongoose from "mongoose";
+import cors from "cors"
+import connectToSocket from "./controllers/SocketManager";
+
+const app = express()
+const server = createServer(app)
+const io = connectToSocket(server)
+const PORT = process.env.PORT as string || 3000
+
+app.set("port", PORT)
+app.use(cors())
+app.use(express())
+
+
+
+interface MainApp {
+    (app: express.Express): Promise<void>;
+}
+
+const main: MainApp = async (app) => {
+    try {
+
+    const start = Date.now()    
+
+    await mongoose.connect(process.env.MONGO_URL as string)
+
+    const end = Date.now()
+
+    const timeTaken = (( end - start ) / 1000).toFixed(3)
+
+    console.log(`✅ MongoDB connected in ${timeTaken}s`);
+
+    server.listen(app.get("port"), () => {
+        console.log("🚀 Server is running on port 3000");
+    })
+    } catch(err) {
+    console.error("❌ Failed to connect to MongoDB:", err);
+        process.exit(1); // Exit the app if DB connection fails
+  }
+}
+
+
+main(app)
+
