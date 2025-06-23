@@ -3,8 +3,15 @@ import { UserModel } from "../models/user.model";
 import { z } from "zod";
 import bcrypt, { hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
-import { Request, Response } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
+
+export function asyncHandler(fn: (req: Request, res: Response, next: NextFunction) => Promise<any>): RequestHandler {
+    return (req, res, next) => {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    };
+}
 
 const register = async (req: Request, res: Response) => {
   const { name, username, password } = req.body;
@@ -33,7 +40,7 @@ const register = async (req: Request, res: Response) => {
   const parsedData = requiredObj.safeParse(req.body);
 
   if (!parsedData.success) {
-    res.status(411).json({
+    return res.status(411).json({
       message: "Error in inputs",
       error: parsedData.error.errors,
     });
@@ -42,60 +49,72 @@ const register = async (req: Request, res: Response) => {
   try {
     const existingUser = await UserModel.find({ username });
 
-    if (existingUser) {
+    if (existingUser.length > 0) {
       return res
-        .status(httpStatus.FOUND)
+        .status(httpStatus.CONFLICT)
         .json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 15);
+    // Generate salt and hash password using crypto
+    const salt = crypto.randomBytes(16).toString("hex");
+    const hash = hashPassword(password, salt);
+    const saltedHash = `${salt}:${hash}`;
 
     await UserModel.create({
       name,
       username,
-      password: hashedPassword,
+      password: saltedHash,
     });
 
-    res.status(httpStatus.CREATED).json({
-      message: "Signed up",
+    return res.status(httpStatus.CREATED).json({
+      message: "Signed up successfully"
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       message: `Server error ${err}`,
     });
   }
+};
+
+const hashPassword = (password: string, salt: string) => {
+  return crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
 };
 
 const login = async (req: Request, res: Response) => {
   const { username, password } = req.body;
 
   try {
-    const response = await UserModel.find({ username });
+    const user = await UserModel.findOne({ username });
 
-    if (!response || response.length === 0) {
-      res.status(httpStatus.NOT_FOUND).json({ message: "User not found" });
-      return;
+    if (!user) {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        message: "Invalid credentials"
+      });
     }
 
-    const user = response[0];
-    const matchedPassword = await bcrypt.compare(password, user.password as string);
-
-    if(!matchedPassword){
-        res.status(404).json({ message: "Invalid Credentials"})
+    // Assume user.password is stored as "salt:hash"
+    const [salt, storedHash] = (user.password as string).split(":");
+    const hash = hashPassword(password, salt);
+    if (hash !== storedHash) {
+      // Invalid credentials
     }
 
-    const token = jwt.sign({
-       id: user._id 
-      }, process.env.JWT_USER_SECRET as string);
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_USER_SECRET as string,
+      { expiresIn: "1h" }
+    );
 
-    res.status(200).json({
-       message: "Signed in successfully", 
-       token
-       });
+    return res.status(httpStatus.OK).json({
+      message: "Signed in successfully",
+      token
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-       message: "Server error"
-       });
+    return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: "Server error"
+    });
   }
 };
+
+export { register, login }

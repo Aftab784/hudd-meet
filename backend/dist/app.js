@@ -15,20 +15,27 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const express_1 = __importDefault(require("express"));
 const node_http_1 = require("node:http");
-const socket_io_1 = require("socket.io");
 const mongoose_1 = __importDefault(require("mongoose"));
 const cors_1 = __importDefault(require("cors"));
+const SocketManager_1 = __importDefault(require("./controllers/SocketManager"));
+const users_routes_1 = __importDefault(require("./routes/users.routes"));
 const app = (0, express_1.default)();
 const server = (0, node_http_1.createServer)(app);
-const io = new socket_io_1.Server(server);
+const io = (0, SocketManager_1.default)(server);
 const PORT = process.env.PORT || 3000;
 app.set("port", PORT);
 app.use((0, cors_1.default)());
-app.use((0, express_1.default)());
-app.get("/home", (req, res) => {
-    res.json({ "hello": "World!!!!!" });
-    return;
-});
+app.use(express_1.default.json({ limit: '40kb' }));
+app.use(express_1.default.urlencoded({ limit: '40kb', extended: true }));
+// Routing
+app.use("/api/v1/users", users_routes_1.default);
+// Error-handling middleware should come after routes
+app.use(((err, req, res, next) => {
+    if (err instanceof SyntaxError && 'body' in err) {
+        return res.status(400).json({ message: "Invalid JSON payload" });
+    }
+    next();
+}));
 const main = (app) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const start = Date.now();
