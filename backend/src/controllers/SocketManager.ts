@@ -98,10 +98,14 @@ const connectToSocket = (server: HttpServer) => {
     });
 
     socket.on("disconnect", () => {
-      
+      const connectedTime = timeOnline[socket.id]
+      const duration = connectedTime ? Math.abs(new Date().getTime() - connectedTime.getTime()) : 0
+      console.log(`Client ${socket.id} disconnected after ${duration / 1000}s`)
+      delete timeOnline[socket.id]
     });
   });
   return io;
 };
+
 
 export default connectToSocket;
