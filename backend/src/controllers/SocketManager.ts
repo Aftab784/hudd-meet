@@ -9,9 +9,19 @@ interface Messages {
   [roomId: string]: { sender: string; message: string; timestamp: number }[];
 }
 
+interface HandRaiseQueue {
+  [roomId: string]: string[]
+}
+
+interface UserRoles {
+  [socketId: string]: { role: string, username: string, avatar?: string }
+}
+
 let connections: Connections = {};
 let messages: Messages = {};
 let timeOnline: { [socketId: string]: Date } = {};
+const handRaiseQueue: HandRaiseQueue = {}
+const userRoles: UserRoles = {}
 
 const connectToSocket = (server: HttpServer) => {
   const io = new Server(server, {
@@ -63,15 +73,34 @@ const connectToSocket = (server: HttpServer) => {
 
     });
 
-    socket.on(
-      "reaction",
-      (roomId: string, emojis: string, senderId: string) => {
+    socket.on("typing", (roomId: string, username: string) => {
+      socket.to(roomId).emit("typing", username)
+    })
+
+    socket.on("private-message", (toId: string, from: string, message: string) => {
+      io.to(toId).emit("private-message", { from, message, timestamp: Date.now() })
+    })
+
+    socket.on("screen-sharing", (roomId: string, isSharing: boolean, sender: string) => {
+      io.to(roomId).emit("screen-sharing", { isSharing, sender })
+    })
+
+    socket.on("start-recording", (roomId: string) => {
+      io.to(roomId).emit("start-recording")
+    })
+
+    socket.on("stop-recording", (roomId: string) => {
+      io.to(roomId).emit("stop-recording")
+    })
+
+    socket.on("reaction", (roomId: string, emojis: string, senderId: string) => {
         io.to(roomId).emit("reactions", { emojis, senderId });
-      }
-    );
+    });
 
     socket.on("raise-hand", (roomId: string, username: string) => {
-      io.to(roomId).emit("hand-raised", username);
+      if (!handRaiseQueue[roomId]) handRaiseQueue[roomId] = []
+      handRaiseQueue[roomId].push(username)
+      io.to(roomId).emit("hand-raised", handRaiseQueue[roomId])
     });
 
     socket.on("mute-all", (roomId: string) => {
