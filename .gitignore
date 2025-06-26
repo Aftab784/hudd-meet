@@ -2,6 +2,8 @@ notes
 notes/features.md
 notes/unique-features.md
 notes/system-design.md
-backend/node_modules
 backend/.env
 .env
+backend/node_modules
+frontend/node_modules
+frontend/.env
