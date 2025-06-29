@@ -28,18 +28,18 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
-        customPurple: "bg-[#881ae5] text-white hover:bg-[#7915cc]",
+        customGrey: "bg-[#D9D9D9] text-[#25458E] hover:bg-[ED467E] hover:!text-white",
       },
       size: {
         default: "<h-9></h-9> px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        sm: "h-8 rounded-3xl gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-3xl px-6 has-[>svg]:px-4",
         icon: "size-9",
       },
        color: {
-        default: "bg-[#ED467E] text-white hover:bg-[#D9D9D9]/90",
-        primary: "bg-[#ED467E] text-white hover:bg-[#D9D9D9]/90",
-        grey: "bg-[#D9D9D9] !text-[#25458E] hover:bg-[#ED467E]/90",
+        default: "bg-[#ED467E] text-white hover:bg-[#D9D9D9] hover:!text-[#25458E]",
+        primary: "bg-[#ED467E] text-white hover:bg-[#D9D9D9]",
+        grey: "bg-[#D9D9D9] text-[#25458E] hover:bg-[#ED467E] hover:!text-white",
       }
     },
     defaultVariants: {
