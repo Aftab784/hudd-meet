@@ -38,7 +38,7 @@ const buttonVariants = cva(
       },
        color: {
         default: "bg-[#ED467E] text-white hover:bg-[#D9D9D9] hover:!text-[#25458E]",
-        primary: "bg-[#ED467E] text-white hover:bg-[#D9D9D9]",
+        primary: "bg-[#ED467E] text-white hover:bg-[#D9D9D9] hover:!text-[#25458E]",
         grey: "bg-[#D9D9D9] text-[#25458E] hover:bg-[#ED467E] hover:!text-white",
       }
     },

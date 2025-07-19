@@ -11,14 +11,13 @@ const Section = React.forwardRef<HTMLDivElement, SectionProps>(
   ({ id, title, description }, forwardedRef) => {
     const localRef = useRef<HTMLDivElement>(null);
 
-    // This combines the forwarded ref and local ref for animation
+    // Combine forwarded ref and local ref for animation
     const setRefs = (node: HTMLDivElement | null) => {
       localRef.current = node;
-
       if (typeof forwardedRef === "function") {
         forwardedRef(node);
       } else if (forwardedRef) {
-        forwardedRef.current = node;
+        (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
       }
     };
 

@@ -13,23 +13,23 @@ const sections = [
 ];
 
 export default function LandingPage() {
-  // Create refs for each section only once
   const sectionRefs = useMemo(
     () =>
       sections.reduce((acc, section) => {
         acc[section.id] = React.createRef<HTMLDivElement>();
         return acc;
-      }, {} as Record<string, React.RefObject<HTMLDivElement>>),
+      }, {} as Record<string, React.RefObject<HTMLDivElement | null>>),
     []
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#25458E] via-[#25458E] via-35% to-[#1D074B] font-['Poppins','Montserrat','sans-serif'] text-white">
-      {/* Sticky capsule navigation bar */}
-      <Navigation sections={sections} sectionRefs={sectionRefs} />
-      {/* Transparent logo+buttons header */}
-      <Header />
-      <main>
+    <div className="min-h-screen bg-gradient-to-tr from-[#25458E] to-[#1D074B] font-['Poppins','Montserrat','sans-serif'] text-white">
+      {/* Stacked header layers */}
+      <div className="relative h-[120px] w-full">
+        <Header />
+      </div>
+      {/* Main content with top padding so it's not hidden */}
+      <main className="pt-[64px]">
         <div ref={sectionRefs["home"]}>
           <Hero />
         </div>

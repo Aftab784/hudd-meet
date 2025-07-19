@@ -31,7 +31,7 @@ const Navigation: React.FC<NavigationProps> = ({ sections, sectionRefs }) => {
   };
 
   return (
-    <nav className="sticky top-4 z-30 flex justify-center">
+    <nav className="w-fit">
       <ul className="flex gap-2 md:gap-6 py-2 px-4 rounded-full bg-white/10 border border-white/20 shadow-lg backdrop-blur-md">
         {sections.map((section) => (
           <li key={section.id}>
